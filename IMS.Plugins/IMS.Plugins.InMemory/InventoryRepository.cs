@@ -35,13 +35,49 @@ namespace IMS.Plugins.InMemory
                 return Task.CompletedTask;
             }
 
-            // Give this new inventory a valid new Id
+            // Give this new Inventory a valid new Id
             var maxId = _inventories.Max(x => x.InventoryId);
             inventory.InventoryId = maxId + 1;
 
             _inventories.Add(inventory);
 
             return Task.CompletedTask;
+        }
+
+        public Task UpdateInventoryAsync(Inventory inventory)
+        {
+            // Trying to rename to an existing inventory - cannot do this due to business logic
+            if (_inventories.Any(x => x.InventoryId != inventory.InventoryId &&
+                x.InventoryName.Equals(inventory.InventoryName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return Task.CompletedTask;
+            }
+
+            var inventoryToUpdate = _inventories.FirstOrDefault(x => x.InventoryId == inventory.InventoryId);
+
+            if (inventoryToUpdate != null)
+            {
+                inventoryToUpdate.InventoryName = inventory.InventoryName;
+                inventoryToUpdate.Price = inventory.Price;
+                inventoryToUpdate.Quantity = inventory.Quantity;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public async Task<Inventory> GetInventoryByIdAsync(int inventoryId)
+        {
+            // Separate variable is made to avoid editing original reference
+            var inventory = _inventories.First(x => x.InventoryId == inventoryId);
+            var newInventory = new Inventory
+            {
+                InventoryId = inventory.InventoryId,
+                InventoryName = inventory.InventoryName,
+                Price = inventory.Price,
+                Quantity = inventory.Quantity
+            };
+
+            return await Task.FromResult(newInventory);
         }
     }
 }
