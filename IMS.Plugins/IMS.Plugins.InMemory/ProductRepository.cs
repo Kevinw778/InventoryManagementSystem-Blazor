@@ -46,5 +46,45 @@ namespace IMS.Plugins.InMemory
 
             return Task.CompletedTask;
         }
+
+        public async Task<Product?> GetProductByIdAsync(int productId)
+        {
+            var product = _products.FirstOrDefault(x => x.ProductId == productId);
+            var newProduct = new Product();
+            if (product != null)
+            {
+                newProduct.ProductId = product.ProductId;
+                newProduct.ProductName = product.ProductName;
+                newProduct.Price = product.Price;
+                newProduct.Quantity = product.Quantity;
+
+                newProduct.ProductInventories = new();
+                if (product.ProductInventories != null && product.ProductInventories.Count > 0)
+                {
+                    foreach (var loopProductInventory in product.ProductInventories)
+                    {
+                        var newLoopProductInventory = new ProductInventory
+                        {
+                            InventoryId = loopProductInventory.InventoryId,
+                            Inventory = new Inventory(),
+                            ProductId = loopProductInventory.ProductId,
+                            Product = product,
+                            InventoryQuantity = loopProductInventory.InventoryQuantity
+                        };
+                        if (loopProductInventory.Inventory != null)
+                        {
+                            newLoopProductInventory.Inventory.InventoryId = loopProductInventory.Inventory.InventoryId;
+                            newLoopProductInventory.Inventory.InventoryName = loopProductInventory.Inventory.InventoryName;
+                            newLoopProductInventory.Inventory.Price = loopProductInventory.Inventory.Price;
+                            newLoopProductInventory.Inventory.Quantity = loopProductInventory.Inventory.Quantity;
+                        }
+
+                        newProduct.ProductInventories.Add(newLoopProductInventory);
+                    }
+                }
+            }
+
+            return await Task.FromResult(newProduct);
+        }
     }
 }
