@@ -86,5 +86,26 @@ namespace IMS.Plugins.InMemory
 
             return await Task.FromResult(newProduct);
         }
+
+        public Task UpdateProductAsync(Product product)
+        {
+            // Prevent different product from having the same name
+            if (_products.Any(x => x.ProductId != product.ProductId &&
+                x.ProductName.ToLower() == product.ProductName.ToLower()))
+            {
+                return Task.CompletedTask;
+            }
+
+            var productToFind = _products.FirstOrDefault(x => x.ProductId == product.ProductId);
+            if (productToFind != null)
+            {
+                productToFind.ProductName = product.ProductName;
+                productToFind.Price = product.Price;
+                productToFind.Quantity = product.Quantity;
+                productToFind.ProductInventories = product.ProductInventories;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

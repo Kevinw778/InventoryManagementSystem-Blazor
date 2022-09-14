@@ -9,7 +9,7 @@
         <td>
             <button type="button"
                 class="btn btn-light"
-                @onclick="@(() => EditProduct(product.ProductId))">
+                @onclick="@(() => EditProduct(product))">
                 Edit
             </button>
         </td>
@@ -21,8 +21,8 @@
     [Parameter]
     public List<Product> Products { get; set; }
 
-    private void EditProduct(int productId)
+    private void EditProduct(Product product)
     {
-
+        NavigationManager.NavigateTo($"/editProduct/{product.ProductId}");
     }
 }
