@@ -19,14 +19,6 @@
     Add Inventory
 </button>
 
-<p>
-    <AutoCompleteComponent Label="Inventory"
-                           SearchFunction="SearchInventory"
-                           OnItemSelected="OnItemSelected"></AutoCompleteComponent>
-    <br />
-    @selectedItem?.Name
-</p>
-
 @code
 {
     private ItemViewModel selectedItem = null;

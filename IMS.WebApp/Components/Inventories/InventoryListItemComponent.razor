@@ -6,6 +6,7 @@
         <td>@inventory.InventoryName</td>
         <td>@inventory.Quantity</td>
         <td>@inventory.Price.ToString("c")</td>
+        <td>@CalculateTotalInventoryValue(inventory).ToString("c")</td>
         <td>
             <button type="button"
                 class="btn btn-light"
@@ -23,5 +24,10 @@
     private void EditInventory(int inventoryId)
     {
         NavigationManager.NavigateTo($"/editInventory/{inventoryId}");
+    }
+
+    private double CalculateTotalInventoryValue(Inventory inventory)
+    {
+        return inventory.Quantity * inventory.Price;
     }
 }

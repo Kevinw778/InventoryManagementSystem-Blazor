@@ -44,6 +44,13 @@
     </div>
     <br />
 
+    @if (CalculateTotalPurchasePrice() > 0)
+    {
+        <text>Total Purchase Price: </text>
+        @CalculateTotalPurchasePrice().ToString("c")
+        <br /><br />
+    }
+
     <button type="submit" class="btn btn-primary">Purchase</button>
 </EditForm>
 
@@ -83,5 +90,10 @@
 
         this.purchaseViewModel.InventoryId = item.Id;
         this.purchaseViewModel.InventoryPrice = selectedInventory.Price;
+    }
+
+    private double CalculateTotalPurchasePrice()
+    {
+        return this.purchaseViewModel.QuantityToPurchase * this.purchaseViewModel.InventoryPrice;
     }
 }
