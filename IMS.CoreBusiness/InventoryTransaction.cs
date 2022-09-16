@@ -17,9 +17,9 @@ namespace IMS.CoreBusiness
         public int InventoryId { get; set; }
 
         [Required]
-        public int QuantityBeforePurchase { get; set; }
+        public int QuantityBefore { get; set; }
 
-        public int QuantityAfterPurchase { get; set; }
+        public int QuantityAfter { get; set; }
         public double UnitPrice { get; set; }
 
         [Required]
@@ -31,6 +31,6 @@ namespace IMS.CoreBusiness
         [Required]
         public string DoneBy { get; set; }
 
-        public Inventory Inventory { get; set; }
+        public Inventory? Inventory { get; set; }
     }
 }

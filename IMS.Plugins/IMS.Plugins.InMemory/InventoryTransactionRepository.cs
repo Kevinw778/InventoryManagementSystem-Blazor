@@ -11,6 +11,12 @@ namespace IMS.Plugins.InMemory
     public class InventoryTransactionRepository : IInventoryTransactionRepository
     {
         private List<InventoryTransaction> _inventoryTransactions = new();
+        private readonly IInventoryRepository inventoryRepository;
+
+        public InventoryTransactionRepository(IInventoryRepository inventoryRepository)
+        {
+            this.inventoryRepository = inventoryRepository;
+        }
 
         public void PurchaseAsync(string poNumber, Inventory inventory, int quantity, string doneBy, double price)
         {
@@ -18,9 +24,9 @@ namespace IMS.Plugins.InMemory
             {
                 PONumber = poNumber,
                 InventoryId = inventory.InventoryId,
-                QuantityBeforePurchase = inventory.Quantity,
+                QuantityBefore = inventory.Quantity,
                 ActivityType = InventoryTransactionType.PurchaseInventory,
-                QuantityAfterPurchase = inventory.Quantity + quantity,
+                QuantityAfter = inventory.Quantity + quantity,
                 TransactionDate = DateTime.Now,
                 DoneBy = doneBy,
                 UnitPrice = price
@@ -33,13 +39,47 @@ namespace IMS.Plugins.InMemory
             {
                 ProductionNumber = productionNumber,
                 InventoryId = inventory.InventoryId,
-                QuantityBeforePurchase = inventory.Quantity,
+                QuantityBefore = inventory.Quantity,
                 ActivityType = InventoryTransactionType.ProduceProduct,
-                QuantityAfterPurchase = inventory.Quantity - quantityToConsume,
+                QuantityAfter = inventory.Quantity - quantityToConsume,
                 TransactionDate = DateTime.Now,
                 DoneBy = doneBy,
                 UnitPrice = price
             });
+        }
+
+        public async Task<IEnumerable<InventoryTransaction>> GetInventoryTransactionsAsync(
+            string inventoryName,
+            DateTime? dateFrom,
+            DateTime? dateTo,
+            InventoryTransactionType? transactionType)
+        {
+            var inventories = (await inventoryRepository.GetInventoriesByNameAsync(string.Empty)).ToList();
+
+            var query = from transaction in this._inventoryTransactions
+                        join inventory in inventories
+                            on transaction.InventoryId equals inventory.InventoryId
+                        where
+                            (string.IsNullOrWhiteSpace(inventoryName) || inventory.InventoryName.ToLower().IndexOf(inventoryName.ToLower()) >= 0)
+                            &&
+                            (!dateFrom.HasValue || transaction.TransactionDate >= dateFrom.Value.Date) &&
+                            (!dateTo.HasValue || transaction.TransactionDate <= dateTo.Value.Date) &&
+                            (!transactionType.HasValue || transaction.ActivityType == transactionType)
+                        select new InventoryTransaction
+                        {
+                            Inventory = inventory,
+                            InventoryTransactionId = transaction.InventoryTransactionId,
+                            PONumber = transaction.PONumber,
+                            InventoryId = transaction.InventoryId,
+                            QuantityBefore = transaction.QuantityBefore,
+                            QuantityAfter = transaction.QuantityAfter,
+                            ActivityType = transaction.ActivityType,
+                            TransactionDate = transaction.TransactionDate,
+                            DoneBy = transaction.DoneBy,
+                            UnitPrice = transaction.UnitPrice
+                        };
+
+            return query;
         }
     }
 }
