@@ -86,9 +86,9 @@
         this.selectedInventory = null;
     }
 
-    private List<ItemViewModel>? SearchInventory(string searchTerms)
+    private async Task<List<ItemViewModel>?> SearchInventory(string searchTerms)
     {
-        var results = ViewInventoriesByNameUseCase.ExecuteAsync(searchTerms).GetAwaiter().GetResult();
+        var results = await ViewInventoriesByNameUseCase.ExecuteAsync(searchTerms);
         if (results == null)
         {
             return null;

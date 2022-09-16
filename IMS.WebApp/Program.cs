@@ -38,6 +38,7 @@ builder.Services.AddTransient<IUpdateProductUseCase, UpdateProductUseCase>();
 // Activities
 builder.Services.AddTransient<IPurchaseInventoryUseCase, PurchaseInventoryUseCase>();
 builder.Services.AddTransient<IProduceProductUseCase, ProduceProductUseCase>();
+builder.Services.AddTransient<ISellProductUseCase, SellProductUseCase>();
 
 
 

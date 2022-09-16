@@ -54,9 +54,9 @@
         JSRuntime.InvokeVoidAsync("preventFormSubmission", "produce-form");
     }
 
-    private List<ItemViewModel>? SearchProduct(string searchTerms)
+    private async Task<List<ItemViewModel>?> SearchProduct(string searchTerms)
     {
-        var results = ViewProductsByNameUseCase.ExecuteAsync(searchTerms).GetAwaiter().GetResult();
+        var results = await ViewProductsByNameUseCase.ExecuteAsync(searchTerms);
         if (results == null)
         {
             return null;
