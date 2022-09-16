@@ -56,27 +56,28 @@ namespace IMS.Plugins.InMemory
         {
             var inventories = (await inventoryRepository.GetInventoriesByNameAsync(string.Empty)).ToList();
 
-            var query = from transaction in this._inventoryTransactions
-                        join inventory in inventories
-                            on transaction.InventoryId equals inventory.InventoryId
+            var query = from it in this._inventoryTransactions
+                        join inv in inventories
+                            on it.InventoryId equals inv.InventoryId
                         where
-                            (string.IsNullOrWhiteSpace(inventoryName) || inventory.InventoryName.ToLower().IndexOf(inventoryName.ToLower()) >= 0)
+                            (string.IsNullOrWhiteSpace(inventoryName) || inv.InventoryName.ToLower().IndexOf(inventoryName.ToLower()) >= 0)
                             &&
-                            (!dateFrom.HasValue || transaction.TransactionDate >= dateFrom.Value.Date) &&
-                            (!dateTo.HasValue || transaction.TransactionDate <= dateTo.Value.Date) &&
-                            (!transactionType.HasValue || transaction.ActivityType == transactionType)
+                            (!dateFrom.HasValue || it.TransactionDate >= dateFrom.Value.Date) &&
+                            (!dateTo.HasValue || it.TransactionDate <= dateTo.Value.Date) &&
+                            (!transactionType.HasValue || it.ActivityType == transactionType)
                         select new InventoryTransaction
                         {
-                            Inventory = inventory,
-                            InventoryTransactionId = transaction.InventoryTransactionId,
-                            PONumber = transaction.PONumber,
-                            InventoryId = transaction.InventoryId,
-                            QuantityBefore = transaction.QuantityBefore,
-                            QuantityAfter = transaction.QuantityAfter,
-                            ActivityType = transaction.ActivityType,
-                            TransactionDate = transaction.TransactionDate,
-                            DoneBy = transaction.DoneBy,
-                            UnitPrice = transaction.UnitPrice
+                            Inventory = inv,
+                            InventoryTransactionId = it.InventoryTransactionId,
+                            PONumber = it.PONumber,
+                            ProductionNumber = it.ProductionNumber,
+                            InventoryId = it.InventoryId,
+                            QuantityBefore = it.QuantityBefore,
+                            QuantityAfter = it.QuantityAfter,
+                            ActivityType = it.ActivityType,
+                            TransactionDate = it.TransactionDate,
+                            DoneBy = it.DoneBy,
+                            UnitPrice = it.UnitPrice
                         };
 
             return query;

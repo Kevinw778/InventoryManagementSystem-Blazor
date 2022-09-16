@@ -27,8 +27,8 @@ builder.Services.AddSingleton<WeatherForecastService>();
 // Register IMS Services
 builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
-builder.Services.AddTransient<IInventoryTransactionRepository, InventoryTransactionRepository>();
-builder.Services.AddTransient<IProductTransactionRepository, ProductTransactionRepository>();
+builder.Services.AddSingleton<IInventoryTransactionRepository, InventoryTransactionRepository>();
+builder.Services.AddSingleton<IProductTransactionRepository, ProductTransactionRepository>();
 
 // Inventories
 builder.Services.AddTransient<IViewInventoriesByNameUseCase, ViewInventoriesByNameUseCase>();
