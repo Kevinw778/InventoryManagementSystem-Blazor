@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IMS.UseCases": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59380;http://localhost:59383"
+    }
+  }
+}

@@ -1,17 +1,17 @@
-﻿@page "/inventoryReport"
+﻿@page "/productReport"
 
-@inject ISearchInventoryTransactionsUseCase SearchInventoryTransactionsUseCase
+@inject ISearchProductTransactionsUseCase SearchProductTransactionsUseCase
 @inject IJSRuntime JSRuntime
 
-<h3>Inventory Transactions</h3>
+<h3>Product Transactions</h3>
 <br />
 
 @* Filters *@
 <div id="printArea">
     <div class="row">
         <div class="col">
-            <label for="inv">Inventory Name</label>
-            <input type="text" id="inv" class="form-control" @bind-value="inventoryName" />
+            <label for="prod">Product Name</label>
+            <input type="text" id="prod" class="form-control" @bind-value="productName" />
         </div>
 
         <div class="col">
@@ -28,14 +28,14 @@
             <label for="at">Activity Type</label>
             <select id="at" class="form-control" @bind="activityTypeId">
                 <option value="0"></option>
-                <option value="1">Purchase Inventory</option>
-                <option value="2">Produce Product</option>
+                <option value="1">Produce Product</option>
+                <option value="2">Sell Product</option>
             </select>
         </div>
 
         <div class="col">
             <label>&nbsp;</label>
-            <button type="button" class="btn btn-primary form-control" @onclick="SearchInventories">Search</button>
+            <button type="button" class="btn btn-primary form-control" @onclick="SearchProducts">Search</button>
         </div>
 
         <div class="col">
@@ -45,44 +45,44 @@
     </div>
     <br />
 
-    @* Inventory Results*@
+    @* Product Results*@
     @if (reportResults != null)
     {
         <table class="table">
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th>Inventory</th>
+                    <th>Product</th>
                     <th>Activity</th>
                     <th>Qty Before</th>
                     <th>Qty After</th>
                     <th>Unit Price</th>
-                    <th>PO #</th>
+                    <th>SO #</th>
                     <th>Production #</th>
                 </tr>
             </thead>
 
             <tbody>
-                @foreach (var inventoryTransaction in reportResults)
+                @foreach (var productTransaction in reportResults)
                 {
                     <tr>
-                        <td>@inventoryTransaction.TransactionDate.ToString("MM/dd/yyyy")</td>
-                        <td>@inventoryTransaction.Inventory.InventoryName</td>
+                        <td>@productTransaction.TransactionDate.ToString("MM/dd/yyyy")</td>
+                        <td>@productTransaction.Product.ProductName</td>
                         <td>
-                            @if (inventoryTransaction.ActivityType == InventoryTransactionType.PurchaseInventory)
-                            {
-                                <text>Purchase</text>
-                            }
-                            else if (inventoryTransaction.ActivityType == InventoryTransactionType.ProduceProduct)
+                            @if (productTransaction.ActivityType == ProductTransactionType.ProduceProduct)
                             {
                                 <text>Produce</text>
                             }
+                            else if (productTransaction.ActivityType == ProductTransactionType.SellProduct)
+                            {
+                                <text>Sell</text>
+                            }
                         </td>
-                        <td>@inventoryTransaction.QuantityBefore</td>
-                        <td>@inventoryTransaction.QuantityAfter</td>
-                        <td>@inventoryTransaction.UnitPrice.ToString("c")</td>
-                        <td>@inventoryTransaction.PONumber</td>
-                        <td>@inventoryTransaction.ProductionNumber</td>
+                        <td>@productTransaction.QuantityBefore</td>
+                        <td>@productTransaction.QuantityAfter</td>
+                        <td>@productTransaction.UnitPrice?.ToString("c")</td>
+                        <td>@productTransaction.SONumber</td>
+                        <td>@productTransaction.ProductionNumber</td>
                     </tr>
                 }
             </tbody>
@@ -92,22 +92,22 @@
 
 @code
 {
-    private string inventoryName = string.Empty;
+    private string productName = string.Empty;
     private DateTime? dateFrom;
     private DateTime? dateTo;
     private int activityTypeId = 0;
-    private IEnumerable<InventoryTransaction>? reportResults;
+    private IEnumerable<ProductTransaction>? reportResults;
 
-    private async Task SearchInventories()
+    private async Task SearchProducts()
     {
-        InventoryTransactionType? transactionType = null;
+        ProductTransactionType? transactionType = null;
         if (activityTypeId != 0)
         {
-            transactionType = (InventoryTransactionType)activityTypeId;
+            transactionType = (ProductTransactionType)activityTypeId;
         }
 
-        reportResults = await SearchInventoryTransactionsUseCase.ExecuteAsync(
-            inventoryName,
+        reportResults = await SearchProductTransactionsUseCase.ExecuteAsync(
+            productName,
             dateFrom,
             dateTo,
             transactionType
