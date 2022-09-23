@@ -10,11 +10,11 @@ namespace IMS.Plugins.EFCoreSql
 
         }
 
-        public DbSet<Inventory>? Inventories { get; set; }
-        public DbSet<Product>? Products { get; set; }
-        public DbSet<ProductInventory>? ProductInventories { get; set; }
-        public DbSet<InventoryTransaction>? InventoryTransactions { get; set; }
-        public DbSet<ProductTransaction>? ProductTransactions { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductInventory> ProductInventories { get; set; }
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+        public DbSet<ProductTransaction> ProductTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
