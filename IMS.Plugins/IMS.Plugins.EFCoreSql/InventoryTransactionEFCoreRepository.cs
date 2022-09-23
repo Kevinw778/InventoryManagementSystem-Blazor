@@ -12,16 +12,18 @@ namespace IMS.Plugins.EFCoreSql
 {
     public class InventoryTransactionEFCoreRepository : IInventoryTransactionRepository
     {
-        private readonly IMSContext db;
+        private readonly IDbContextFactory<IMSContext> contextFactory;
 
-        public InventoryTransactionEFCoreRepository(IMSContext db)
+        public InventoryTransactionEFCoreRepository(IDbContextFactory<IMSContext> contextFactory)
         {
-            this.db = db;
+            this.contextFactory = contextFactory;
         }
 
         public async Task PurchaseAsync(string poNumber, Inventory inventory, int quantity, string doneBy, double price)
         {
-            this.db.InventoryTransactions.Add(new InventoryTransaction
+            using var db = this.contextFactory.CreateDbContext();
+
+            db.InventoryTransactions.Add(new InventoryTransaction
             {
                 PONumber = poNumber,
                 InventoryId = inventory.InventoryId,
@@ -33,12 +35,14 @@ namespace IMS.Plugins.EFCoreSql
                 UnitPrice = price
             });
 
-            await this.db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
         public async Task ProduceAsync(string productionNumber, Inventory inventory, int quantityToConsume, string doneBy, double price)
         {
-            this.db.InventoryTransactions.Add(new InventoryTransaction
+            using var db = this.contextFactory.CreateDbContext();
+
+            db.InventoryTransactions.Add(new InventoryTransaction
             {
                 ProductionNumber = productionNumber,
                 InventoryId = inventory.InventoryId,
@@ -50,7 +54,7 @@ namespace IMS.Plugins.EFCoreSql
                 UnitPrice = price
             });
 
-            await this.db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<InventoryTransaction>> GetInventoryTransactionsAsync(
@@ -59,8 +63,10 @@ namespace IMS.Plugins.EFCoreSql
             DateTime? dateTo,
             InventoryTransactionType? transactionType)
         {
-            var query = from it in this.db.InventoryTransactions
-                        join inv in this.db.Inventories
+            using var db = this.contextFactory.CreateDbContext();
+
+            var query = from it in db.InventoryTransactions
+                        join inv in db.Inventories
                             on it.InventoryId equals inv.InventoryId
                         where
                             (string.IsNullOrWhiteSpace(inventoryName) || inv.InventoryName.ToLower().IndexOf(inventoryName.ToLower()) >= 0)

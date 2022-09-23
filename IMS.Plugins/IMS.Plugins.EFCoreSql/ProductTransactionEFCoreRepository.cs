@@ -14,21 +14,23 @@ namespace IMS.Plugins.EFCoreSql
         private readonly IProductRepository productRepository;
         private readonly IInventoryTransactionRepository inventoryTransactionRepository;
         private readonly IInventoryRepository inventoryRepository;
-        private readonly IMSContext db;
+        private readonly IDbContextFactory<IMSContext> contextFactory;
 
         public ProductTransactionEFCoreRepository(IProductRepository productRepository,
             IInventoryTransactionRepository inventoryTransactionRepository,
             IInventoryRepository inventoryRepository,
-            IMSContext db)
+            IDbContextFactory<IMSContext> contextFactory)
         {
             this.productRepository = productRepository;
             this.inventoryTransactionRepository = inventoryTransactionRepository;
             this.inventoryRepository = inventoryRepository;
-            this.db = db;
+            this.contextFactory = contextFactory;
         }
 
         public async Task ProduceAsync(string productionNumber, Product product, int quantity, string doneBy)
         {
+            using var db = this.contextFactory.CreateDbContext();
+
             // Decrease the inventories
             var otherProduct = await this.productRepository.GetProductByIdAsync(product.ProductId);
             if (otherProduct != null)
@@ -55,7 +57,7 @@ namespace IMS.Plugins.EFCoreSql
             }
 
             // Add product transaction record
-            this.db.ProductTransactions.Add(new ProductTransaction
+            db.ProductTransactions.Add(new ProductTransaction
             {
                 ProductionNumber = productionNumber,
                 ProductId = product.ProductId,
@@ -66,12 +68,14 @@ namespace IMS.Plugins.EFCoreSql
                 DoneBy = doneBy
             });
 
-            await this.db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
         public async Task SellProductAsync(string salesOrderNumber, Product product, int quantity, double unitPrice, string doneBy)
         {
-            this.db.ProductTransactions.Add(new ProductTransaction
+            using var db = this.contextFactory.CreateDbContext();
+
+            db.ProductTransactions.Add(new ProductTransaction
             {
                 ActivityType = ProductTransactionType.SellProduct,
                 SONumber = salesOrderNumber,
@@ -83,13 +87,15 @@ namespace IMS.Plugins.EFCoreSql
                 UnitPrice = unitPrice
             });
 
-            await this.db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ProductTransaction>> GetProductTransactionsAsync(string productName, DateTime? dateFrom, DateTime? dateTo, ProductTransactionType? productTransactionType)
         {
-            var query = from pt in this.db.ProductTransactions
-                        join prod in this.db.Products
+            using var db = this.contextFactory.CreateDbContext();
+
+            var query = from pt in db.ProductTransactions
+                        join prod in db.Products
                             on pt.ProductId equals prod.ProductId
                         where
                             (string.IsNullOrWhiteSpace(productName) || prod.ProductName.ToLower().IndexOf(productName.ToLower()) >= 0)

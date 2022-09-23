@@ -12,38 +12,46 @@ namespace IMS.Plugins.EFCoreSql
 {
     public class ProductEFCoreRepository : IProductRepository
     {
-        private readonly IMSContext db;
+        private readonly IDbContextFactory<IMSContext> contextFactory;
 
-        public ProductEFCoreRepository(IMSContext db)
+        public ProductEFCoreRepository(IDbContextFactory<IMSContext> contextFactory)
         {
-            this.db = db;
+            this.contextFactory = contextFactory;
         }
 
         public async Task AddProductAsync(Product product)
         {
-            this.db.Products.Add(product);
-            FlagInventoryUnchanged(product, this.db);
+            using var db = this.contextFactory.CreateDbContext();
 
-            await this.db.SaveChangesAsync();
+            db.Products.Add(product);
+            FlagInventoryUnchanged(product, db);
+
+            await db.SaveChangesAsync();
         }        
 
         public async Task<IEnumerable<Product>> GetProductsByNameAsync(string name)
         {
-            return await this.db.Products.Where(x =>
+            using var db = this.contextFactory.CreateDbContext();
+
+            return await db.Products.Where(x =>
                 x.ProductName.ToLower().IndexOf(name.ToLower()) >= 0).ToListAsync();
         }
 
 
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
-            return await this.db.Products.Include(x => x.ProductInventories)
+            using var db = this.contextFactory.CreateDbContext();
+
+            return await db.Products.Include(x => x.ProductInventories)
                 .ThenInclude(x => x.Inventory)
                 .FirstOrDefaultAsync(x => x.ProductId == productId);
         }
 
         public async Task UpdateProductAsync(Product product)
         {
-            var prod = await this.db.Products
+            using var db = this.contextFactory.CreateDbContext();
+
+            var prod = await db.Products
                 .Include(x => x.ProductInventories)
                 .FirstOrDefaultAsync(x => x.ProductId == product.ProductId);
 
@@ -54,9 +62,9 @@ namespace IMS.Plugins.EFCoreSql
                 prod.Quantity = product.Quantity;
                 prod.ProductInventories = product.ProductInventories;
 
-                FlagInventoryUnchanged(product, this.db);
+                FlagInventoryUnchanged(product, db);
 
-                await this.db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
         }
 
